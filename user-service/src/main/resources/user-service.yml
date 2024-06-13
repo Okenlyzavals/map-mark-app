@@ -1,0 +1,218 @@
+openapi: "3.0.3"
+info:
+  description: An API contract for user  service
+  version: ${project.version}
+  title: api-backend-user-service
+tags:
+  - name: user
+    description: user-related actions
+paths:
+  /users/register:
+    post:
+      tags:
+        - user
+      summary: Create user
+      operationId: createUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        201:
+          description: successfully registered
+          headers:
+            location:
+              schema:
+                type: string
+                example: 'https://mapmarkapp.com/user-service/users/c7de04b6-f547-4b1c-b87e-16f1924d6c8f'
+        400:
+          description: Invalid request
+        409:
+          description: user with this email/username already exists
+
+  /users/invite:
+    post:
+      tags:
+        - user
+      summary: Invite user
+      operationId: inviteUser
+      security:
+        - user-service-security: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationRequest'
+      responses:
+        200:
+          description: successfully invited
+        400:
+          description: Invalid request
+        409:
+          description: user with this email already exists or is already invited
+
+  /users/{id}:
+    get:
+      tags:
+        - user
+      summary: Get user data
+      operationId: getUser
+      security:
+        - user-service-security: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: id of a user
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        404:
+          description: Not found
+
+  /users/{id}/block:
+    post:
+      tags:
+        - user
+      summary: Block user
+      operationId: blockUser
+      security:
+        - user-service-security: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: id of a user
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: successfully blocked
+        404:
+          description: Not found
+
+  /users/{id}/unblock:
+    post:
+      tags:
+        - user
+      summary: unblock user
+      operationId: unblockUser
+      security:
+        - user-service-security: [ ]
+      parameters:
+        - name: id
+          in: path
+          description: id of a user
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: successfully unblocked
+        404:
+          description: Not found
+
+components:
+
+  securitySchemes:
+    user-service-security:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      required:
+        - id
+        - username
+        - firstName
+        - lastName
+        - email
+        - status
+        - role
+        - createdAt
+      properties:
+        id:
+          type: string
+        username:
+          type: string
+          minLength: 3
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        role:
+          $ref: '#/components/schemas/UserRole'
+        createdAt:
+          type: string
+          format: date-time
+
+    RegistrationRequest:
+      type: object
+      required:
+        - username
+        - firstName
+        - lastName
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+        firstName:
+          type: string
+          minLength: 1
+        lastName:
+          type: string
+          minLength: 1
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    InvitationRequest:
+      type: object
+      required:
+        - email
+        - role
+      properties:
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/UserRole'
+
+    UserRole:
+      type: string
+      enum: [ USER, ADMIN ]
+
+    UserStatus:
+      type: string
+      enum: [ BLOCKED, ACTIVE ]
+
+    error:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string

@@ -1,0 +1,426 @@
+openapi: 3.0.3
+info:
+  title: api-backend-mark-service
+  description: An API contract for mark service
+  version: ${project.version}
+tags:
+  - name: mark
+    description: marks on the map
+  - name: comment
+    description: comments for marks
+security:
+  - map-mark-security: []
+paths:
+  /marks:
+    get:
+      tags:
+        - mark
+      summary: Get all marks on the map
+      description: ADMIN only
+      operationId: getAllMarks
+      parameters:
+        - name: page
+          in: query
+          description: page number
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: size
+          in: query
+          description: items per page
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        200:
+          description: successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkPage'
+        400:
+          description: Invalid request
+    post:
+      tags:
+        - mark
+      summary: Create a Mark
+      operationId: createMark
+      description: ADMIN can create marks for other users, regular USERs can only create marks for themselves
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MarkRequest'
+      responses:
+        201:
+          description: successfully created
+          headers:
+            location:
+              schema:
+                type: string
+                example: 'https://mapmarkapp.com/mark-service/marks/c7de04b6-f547-4b1c-b87e-16f1924d6c8f'
+        400:
+          description: Invalid request
+
+  /marks/user/{userId}:
+    get:
+      tags:
+        - mark
+      summary: Get all marks of a given user sorted by creation date
+      operationId: getUserMarks
+      description: ADMIN can retrieve marks for other users including deleted marks,
+                   \ regular USERs can only retrieve own non-deleted marks
+      parameters:
+        - name: userId
+          in: path
+          description: id of a user
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: page number
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: size
+          in: query
+          description: items per page
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        200:
+          description: successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkPage'
+        400:
+          description: Invalid request
+        404:
+          description: User not found
+
+  /marks/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - mark
+      summary: Get mark by ID
+      operationId: getMark
+      description: ADMIN can retrieve marks for other users including deleted marks,
+                   \ regular USERs can only retrieve own non-deleted marks
+      responses:
+        200:
+          description: successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MarkResponse'
+        400:
+          description: Invalid request
+        404:
+          description: Not found
+    delete:
+      tags:
+        - mark
+      summary: Delete a Mark
+      operationId: deleteMark
+      responses:
+        204:
+          description: successfully deleted
+        400:
+          description: Invalid request
+
+  /comments:
+    get:
+      tags:
+        - comment
+      summary: Get all comments for given mark
+      operationId: getMarkComments
+      description: ADMIN can retrieve comments of all other users including deleted comments,
+                  \ regular USERs can only retrieve non-deleted comments for non-deleted marks of their own
+      parameters:
+        - name: markId
+          in: query
+          description: ID of a mark
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: page number
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 0
+        - name: size
+          in: query
+          description: items per page
+          required: true
+          schema:
+            type: integer
+            format: int32
+            minimum: 1
+      responses:
+        200:
+          description: successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentPage'
+        400:
+          description: Invalid request
+        404:
+          description: Mark not found
+    post:
+      tags:
+        - comment
+      summary: Create a comment for a mark
+      operationId: createComment
+      description: ADMIN can leave comments for any marks,
+                  \ regular USERs can only leave comments for non-deleted marks of their own
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommentRequest'
+      responses:
+        201:
+          description: successfully created
+          headers:
+            location:
+              schema:
+                type: string
+                example: 'https://mapmarkapp.com/mark-service/comments/c7de04b6-f547-4b1c-b87e-16f1924d6c8f'
+        400:
+          description: Invalid request
+
+  /comments/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      tags:
+        - comment
+      summary: Get comment by ID
+      operationId: getComment
+      description: ADMIN can retrieve comments of all other users including deleted comments,
+                   \ regular USERs can only retrieve non-deleted comments for non-deleted marks of their own
+      responses:
+        200:
+          description: successfully retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        400:
+          description: Invalid request
+        404:
+          description: Not found
+    delete:
+      tags:
+        - comment
+      summary: Delete a comment by ID
+      operationId: deleteComment
+      responses:
+        204:
+          description: successfully deleted
+        400:
+          description: Invalid request
+
+components:
+  securitySchemes:
+    map-mark-security:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT
+  schemas:
+    Point:
+      type: object
+      required:
+        - x
+        - y
+      properties:
+        x:
+          type: number
+          description: longitude
+          minimum: -180.0
+          maximum: 180.0
+        y:
+          type: number
+          description: latitude
+          minimum: -90.0
+          maximum: 90.0
+
+    MarkRequest:
+      type: object
+      required:
+        - fileId
+        - userId
+        - title
+        - location
+      properties:
+        fileId:
+          type: string
+          description: ID of an attached file
+          example: 4f56571a-ac15-420e-90f5-7d3772912652
+        userId:
+          type: string
+          description: ID of an owner of the mark
+          example: 4f56571a-ac15-420e-90f5-7d3772912652
+        title:
+          type: string
+          minLength: 3
+          example: Greatest landmark in my life
+        text:
+          type: string
+          minLength: 3
+          example: My lovely home
+        location:
+          $ref: '#/components/schemas/Point'
+
+    MarkResponse:
+      type: object
+      required:
+        - id
+        - fileId
+        - userId
+        - title
+        - location
+        - createdAt
+        - createdBy
+        - isDeleted
+      properties:
+        id:
+          type: string
+          example: 4f56571a-ac15-420e-90f5-7d3772912652
+        fileId:
+          type: string
+          description: ID of an attached file
+          example: 4f56571a-ac15-420e-90f5-7d3772912652
+        userId:
+          type: string
+          description: ID of an owner of the mark
+          example: 4f56571a-ac15-420e-90f5-7d3772912652
+        title:
+          type: string
+          minLength: 3
+          example: Greatest landmark in my life
+        text:
+          type: string
+          minLength: 3
+          example: My lovely home
+        location:
+          $ref: '#/components/schemas/Point'
+        isDeleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+          example: 2021-01-29T15:00:46.381Z
+        createdBy:
+          type: string
+          example: 4f56571a-ac15-420e-90f5-7d3772912652
+
+    MarkPage:
+      type: object
+      required:
+        - marks
+        - page
+        - total
+      properties:
+        marks:
+          type: array
+          items:
+            $ref: "#/components/schemas/MarkResponse"
+        page:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+
+    CommentResponse:
+      type: object
+      required:
+        - id
+        - markId
+        - userId
+        - text
+        - isDeleted
+        - createdAt
+      properties:
+        id:
+          type: string
+        markId:
+          type: string
+        userId:
+          type: string
+        text:
+          type: string
+          minLength: 3
+        isDeleted:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+          example: 2021-01-29T15:00:46.381Z
+
+    CommentRequest:
+      type: object
+      required:
+        - markId
+        - text
+      properties:
+        markId:
+          type: string
+        text:
+          type: string
+          minLength: 3
+
+    CommentPage:
+      type: object
+      required:
+        - comments
+        - page
+        - total
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommentResponse"
+        page:
+          type: integer
+          format: int32
+        total:
+          type: integer
+          format: int64
+
+    error:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string

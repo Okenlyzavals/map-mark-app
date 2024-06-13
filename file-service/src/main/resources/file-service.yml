@@ -1,0 +1,99 @@
+openapi: "3.0.3"
+info:
+  description: An API contract for file service
+  version: ${project.version}
+  title: api-backend-file-service
+tags:
+  - name: file
+    description: file operations
+security:
+  - file-service-security: []
+paths:
+  /files:
+    post:
+      summary: Upload a file of supported type
+      operationId: uploadFile
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+                - type
+              properties:
+                type:
+                  $ref: '#/components/schemas/fileType'
+                file:
+                  type: string
+                  format: binary
+      responses:
+        201:
+          description: successfully uploaded
+          content:
+            application/json:
+              schema:
+                type: string
+                description: file ID
+                example: 4f56571a-ac15-420e-90f5-7d3772912652
+        400:
+          description: Invalid request
+        415:
+          description: File type is not supported
+        503:
+          description: failed to process the file on file server
+
+  /files/{fileId}:
+    get:
+      summary: Get file by ID
+      operationId: downloadFile
+      parameters:
+        - name: fileId
+          in: path
+          description: id of a file to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: successfully retrieved
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename=file_name.xls
+            Content-Type:
+              schema:
+                type: string
+                example: application/vnd.ms-excel
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: byte
+        400:
+          description: Invalid request
+        404:
+          description: File not found
+        500:
+          description: failed to process the file
+
+components:
+  securitySchemes:
+    file-service-security:
+      type: http
+      scheme: Bearer
+      bearerFormat: JWT
+  schemas:
+    fileType:
+      type: string
+      enum: [ IMAGE ]
+    error:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        error:
+          type: string

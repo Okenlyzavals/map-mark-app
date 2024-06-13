@@ -1,0 +1,24 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: replace_me
+          jwk-set-uri: replace_me
+  application:
+    name: user-service
+  data:
+    mongodb:
+      database: UserServiceDB
+      uri: replace_me
+      auto-index-creation: true
+
+server:
+  port: 8081
+
+local:
+  keycloak:
+    server-uri: replace_me
+    realm: map-mark-app
+    client-secret: replace_me
+    user-management-client-id: user-management

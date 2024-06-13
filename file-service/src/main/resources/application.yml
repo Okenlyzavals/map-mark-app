@@ -1,0 +1,26 @@
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: replace_me
+          jwk-set-uri: replace_me
+  application:
+    name: file-service
+  data:
+    mongodb:
+      database: FileServiceDB
+      uri: replace_me
+      auto-index-creation: true
+  servlet:
+    multipart:
+      max-request-size: 4MB
+      max-file-size: 4MB
+
+server:
+  port: 8082
+
+storage-server:
+  uri: replace_me
+  read-key: replace_me
+  write-key: replace_me

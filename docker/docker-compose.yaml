@@ -1,0 +1,146 @@
+version: '3.9'
+
+services:
+
+  map-mark-service:
+    container_name: map-mark-service
+    build:
+      context: ../mark-service
+      dockerfile: ../mark-service/Dockerfile
+    image: map-mark-service:latest
+    ports:
+      - "8080:8080"
+    networks:
+      - map-mark-service-network
+    depends_on:
+      - keycloak
+      - mongo
+    environment:
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:8888/realms/map-mark-app"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8888/realms/map-mark-app/protocol/openid-connect/certs"
+      SPRING_DATA_MONGODB_URI: "mongodb://demoUser:demoPassword@mongo:27017"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+
+  user-service:
+    container_name: user-service
+    build:
+      context: ../user-service
+      dockerfile: ../user-service/Dockerfile
+    image: user-service:latest
+    ports:
+      - "8081:8081"
+    networks:
+      - user-service-network
+    depends_on:
+      - keycloak
+      - mongo
+    environment:
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:8888/realms/map-mark-app"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8888/realms/map-mark-app/protocol/openid-connect/certs"
+      SPRING_DATA_MONGODB_URI: "mongodb://demoUser:demoPassword@mongo:27017"
+      LOCAL_KEYCLOAK_SERVER_URI: "http://keycloak:8888"
+      LOCAL_KEYCLOAK_CLIENT_SECRET: "9MLk9wkyxne8C9jALbzwNqV4B0PtQ8qH"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+
+  file-service:
+    container_name: file-service
+    build:
+      context: ../file-service
+      dockerfile: ../file-service/Dockerfile
+    image: file-service:latest
+    ports:
+      - "8082:8082"
+    networks:
+      - file-service-network
+    depends_on:
+      - keycloak
+      - mongo
+      - simple-file-server
+    environment:
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://localhost:8888/realms/map-mark-app"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8888/realms/map-mark-app/protocol/openid-connect/certs"
+      SPRING_DATA_MONGODB_URI: "mongodb://demoUser:demoPassword@mongo:27017"
+      STORAGE_SERVER_URI: "http://simple-file-server:4000"
+      STORAGE_SERVER_READ_KEY: "demoReadKey"
+      STORAGE_SERVER_WRITE_KEY: "demoWriteKey"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: DEBUG
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: DEBUG
+
+  simple-file-server:
+    image: flaviostutz/simple-file-server
+    networks:
+      - file-service-network
+    environment:
+      WRITE_SHARED_KEY: demoWriteKey
+      READ_SHARED_KEY: demoReadKey
+      LOCATION_BASE_URL: http://localhost:4000
+      LOG_LEVEL: debug
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: demoUser
+      MONGO_INITDB_ROOT_PASSWORD: demoPassword
+    networks:
+      - map-mark-service-network
+      - user-service-network
+      - file-service-network
+
+  postgres:
+    image: postgres:15.7-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "keycloak" ]
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: password
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+        tmpfs:
+          size: 100000000
+    networks:
+      - keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.0
+    command: [ "start-dev", "--import-realm", "--http-port=8888" ]
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: password
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      KC_REALM_NAME: mark-app
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: password
+      KC_HTTP_PORT: 8888
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./keycloak/realm.json:/opt/keycloak/data/import/realm.json:ro
+    depends_on:
+      - postgres
+    networks:
+      - keycloak
+      - map-mark-service-network
+      - user-service-network
+      - file-service-network
+
+networks:
+  keycloak:
+    driver: bridge
+  map-mark-service-network:
+    driver: bridge
+  user-service-network:
+    driver: bridge
+  file-service-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local

@@ -1,0 +1,763 @@
+{
+	"info": {
+		"_postman_id": "3994e992-8dcd-4550-8258-a05c5b178238",
+		"name": "MAP PHOTO APP",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36242336"
+	},
+	"item": [
+		{
+			"name": "File Data Service",
+			"item": [
+				{
+					"name": "Upload file",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"postman.setEnvironmentVariable(\"file_id\", responseBody);"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "type",
+									"value": "IMAGE",
+									"type": "text"
+								},
+								{
+									"key": "file",
+									"description": "upload your image",
+									"type": "file",
+									"src": "/C:/Users/yellowlobster/Pictures/57f657a58435458e04b55a7efc3c8ae5.png"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl_fileService}}/files",
+							"host": [
+								"{{baseUrl_fileService}}"
+							],
+							"path": [
+								"files"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Download file",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl_fileService}}/files/:fileId",
+							"host": [
+								"{{baseUrl_fileService}}"
+							],
+							"path": [
+								"files",
+								":fileId"
+							],
+							"variable": [
+								{
+									"key": "fileId",
+									"value": "eb6e79cd-effd-4e1b-8561-44d3f6069068"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Service",
+			"item": [
+				{
+					"name": "Keycloak",
+					"item": [
+						{
+							"name": "Log in",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+											"postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "password",
+											"type": "text"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "text"
+										},
+										{
+											"key": "password",
+											"value": "12345678",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "frontend",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl_keycloak}}/realms/map-mark-app/protocol/openid-connect/token",
+									"host": [
+										"{{baseUrl_keycloak}}"
+									],
+									"path": [
+										"realms",
+										"map-mark-app",
+										"protocol",
+										"openid-connect",
+										"token"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Refresh token",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"var jsonData = JSON.parse(responseBody);",
+											"postman.setEnvironmentVariable(\"access_token\", jsonData.access_token);",
+											"postman.setEnvironmentVariable(\"refresh_token\", jsonData.refresh_token);"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/x-www-form-urlencoded"
+									}
+								],
+								"body": {
+									"mode": "urlencoded",
+									"urlencoded": [
+										{
+											"key": "grant_type",
+											"value": "refresh_token",
+											"type": "text"
+										},
+										{
+											"key": "client_id",
+											"value": "frontend",
+											"type": "text"
+										},
+										{
+											"key": "refresh_token",
+											"value": "{{refresh_token}}",
+											"type": "text"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{baseUrl_keycloak}}/realms/map-mark-app/protocol/openid-connect/token",
+									"host": [
+										"{{baseUrl_keycloak}}"
+									],
+									"path": [
+										"realms",
+										"map-mark-app",
+										"protocol",
+										"openid-connect",
+										"token"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Register",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"username\":\"user\",\r\n    \"email\":\"user@mail.org\",\r\n    \"firstName\":\"user\",\r\n    \"lastName\":\"uninvited\",\r\n    \"password\":\"12345678\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl_userService}}/users/register",
+							"host": [
+								"{{baseUrl_userService}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl_userService}}/users/:userId",
+							"host": [
+								"{{baseUrl_userService}}"
+							],
+							"path": [
+								"users",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "1f8ebd4f-e5a9-4eca-a64e-61c5679d78cb"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Block user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl_userService}}/users/:userId/block",
+							"host": [
+								"{{baseUrl_userService}}"
+							],
+							"path": [
+								"users",
+								":userId",
+								"block"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ec9b0c65-e767-43d0-8d43-03f62c06ba3e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Unblock user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl_userService}}/users/:userId/unblock",
+							"host": [
+								"{{baseUrl_userService}}"
+							],
+							"path": [
+								"users",
+								":userId",
+								"unblock"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": "ec9b0c65-e767-43d0-8d43-03f62c06ba3e"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Invite User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{access_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\":\"test4@mail.org\",\r\n    \"role\":\"ADMIN\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl_userService}}/users/invite",
+							"host": [
+								"{{baseUrl_userService}}"
+							],
+							"path": [
+								"users",
+								"invite"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Mark Service",
+			"item": [
+				{
+					"name": "Marks",
+					"item": [
+						{
+							"name": "Create Mark",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fileId\":\"81702d02-ad07-4e70-bcaf-c2ea4f9dafea\",\r\n    \"userId\":\"95216fd3-188b-4d5b-95a7-5b663d631c2f\",\r\n    \"title\":\"My dark twin mark\",\r\n    \"location\":{\r\n        \"x\": -15.2,\r\n        \"y\": -83.1\r\n    }\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl_markService}}/marks",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"marks"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get mark by ID",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/marks/:id",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"marks",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "8a188505-f3b4-4698-8b1f-a9f6aa93e187"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete mark by ID",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/marks/:id",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"marks",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "c0bcb64c-d24a-42a1-9479-198aa9770fa3",
+											"description": "USER can only delete own marks"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get user marks",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/marks/user/:userId?page=0&size=5",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"marks",
+										"user",
+										":userId"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "size",
+											"value": "5"
+										}
+									],
+									"variable": [
+										{
+											"key": "userId",
+											"value": "3fc2b4c2-d31b-464f-ae74-b2ff384a7930",
+											"description": "Must be own id if ROLE=USER"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get all marks of all users",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/marks?page=0&size=5",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"marks"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "size",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Comments",
+					"item": [
+						{
+							"name": "Leave a comment",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"markId\":\"c0bcb64c-d24a-42a1-9479-198aa9770fa3\",\r\n    \"text\":\"Admin is an asshole he left comments\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl_markService}}/comments",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"comments"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get comments for mark",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/comments?markId=c16a36ee-cad4-4c57-89fb-cbce3e9e151a&page=0&size=5",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"comments"
+									],
+									"query": [
+										{
+											"key": "markId",
+											"value": "c16a36ee-cad4-4c57-89fb-cbce3e9e151a"
+										},
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "size",
+											"value": "5"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get comment by Id",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/comments/:commentId",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"comments",
+										":commentId"
+									],
+									"variable": [
+										{
+											"key": "commentId",
+											"value": "7d784bf7-3cc9-431c-9d6c-0b24672d602f"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a comment by Id",
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{access_token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl_markService}}/comments/:commentId",
+									"host": [
+										"{{baseUrl_markService}}"
+									],
+									"path": [
+										"comments",
+										":commentId"
+									],
+									"variable": [
+										{
+											"key": "commentId",
+											"value": "933c4d77-8fe7-4aeb-b69a-4047fb4010e1"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	]
+}

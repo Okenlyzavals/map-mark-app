@@ -1,0 +1,18 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: mark-service
+  data:
+    mongodb:
+      database: MarkServiceDB
+      uri: replace_me
+      auto-index-creation: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: replace_me
+          jwk-set-uri: replace_me
+
